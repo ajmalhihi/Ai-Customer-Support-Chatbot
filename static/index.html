@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajmal Electronics - Support Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --card-bg: #ffffff;
+      --chat-bg: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bot-msg-bg: #f1f5f9;
+      --bot-msg-text: #0f172a;
+      --user-msg-bg: #2563eb;
+      --user-msg-text: #ffffff;
+      --border-color: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .chat-card {
+      width: 100%;
+      max-width: 750px;
+      height: 85vh;
+      max-height: 700px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: #ffffff;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: #eff6ff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+
+    .brand-logo svg { width: 24px; height: 24px; }
+
+    .brand-text h1 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+    .brand-text p { font-size: 0.8rem; color: var(--text-muted); }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #16a34a;
+      background: #f0fdf4;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
+
+    .chat-messages {
+      flex: 1;
+      padding: 24px;
+      background: var(--chat-bg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 80%; }
+    .message-row.user { align-self: flex-end; flex-direction: row-reverse; }
+    .message-row.bot { align-self: flex-start; }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .bot .avatar { background: #e0f2fe; color: #0369a1; }
+    .user .avatar { background: #3b82f6; color: #ffffff; }
+
+    .bubble {
+      padding: 12px 18px;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .bot .bubble {
+      background: var(--bot-msg-bg);
+      color: var(--bot-msg-text);
+      border-bottom-left-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .user .bubble {
+      background: var(--user-msg-bg);
+      color: var(--user-msg-text);
+      border-bottom-right-radius: 4px;
+    }
+
+    .typing-indicator { display: flex; align-items: center; gap: 4px; padding: 14px 18px; }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    .chat-input-area {
+      padding: 16px 24px;
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .input-form { display: flex; gap: 12px; }
+
+    .input-field {
+      flex: 1;
+      padding: 12px 18px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .send-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+    }
+
+    .send-btn:hover { background: var(--primary-hover); }
+    .send-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    .quick-questions {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    .quick-btn {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-btn:hover { background: #e2e8f0; color: #0f172a; }
+
+    .quick-btn.location-btn {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #047857;
+      font-weight: 600;
+    }
+
+    .quick-btn.location-btn:hover { background: #d1fae5; }
+  </style>
+</head>
+<body>
+
+  <div class="chat-card">
+
+    <header class="chat-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l8-4v18M13 21V11l6 3v7M9 9h.01M9 13h.01M9 17h.01"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Ajmal Electronics</h1>
+          <p>AI Support Assistant</p>
+        </div>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot"></span> Online
+      </div>
+    </header>
+
+    <main class="chat-messages" id="chat-messages">
+      <div class="message-row bot">
+        <div class="avatar">AE</div>
+        <div class="bubble">Hello, and welcome to Ajmal Electronics! I'm happy to help with any questions about our products or where to find them. How can I assist you today?</div>
+      </div>
+    </main>
+
+    <footer class="chat-input-area">
+      <div class="quick-questions">
+        <button class="quick-btn location-btn" onclick="findNearestStore()">📍 Find Nearest Store</button>
+        <button class="quick-btn" onclick="sendQuickMessage('What products do you sell?')">Products</button>
+        <button class="quick-btn" onclick="sendQuickMessage('Where can I buy your products?')">Where to Buy</button>
+        <button class="quick-btn" onclick="sendQuickMessage('Do you deliver online orders?')">Delivery</button>
+      </div>
+
+      <form class="input-form" id="chat-form">
+        <input 
+          type="text" 
+          id="user-input" 
+          class="input-field" 
+          placeholder="Ask a question about Ajmal Electronics..." 
+          autocomplete="off"
+          required
+        >
+        <button type="submit" id="send-btn" class="send-btn">
+          <span>Send</span>
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
+      </form>
+    </footer>
+
+  </div>
+
+  <script>
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const sendBtn = document.getElementById('send-btn');
+
+    // Stores the full conversation so far, so the bot remembers context
+    let conversationHistory = [];
+
+    chatForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const messageText = userInput.value.trim();
+      if (!messageText) return;
+      handleUserMessage(messageText);
+    });
+
+    function sendQuickMessage(text) {
+      userInput.value = text;
+      handleUserMessage(text);
+    }
+
+    async function handleUserMessage(messageText) {
+      appendMessage('user', messageText);
+      userInput.value = '';
+      setLoading(true);
+      const typingIndicator = showTypingIndicator();
+
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            message: messageText,
+            history: conversationHistory 
+          })
+        });
+
+        const data = await response.json();
+        removeTypingIndicator(typingIndicator);
+
+        if (response.ok) {
+          appendMessage('bot', data.reply);
+          // Save this exchange into history so the next message includes it
+          conversationHistory.push({ role: 'user', content: messageText });
+          conversationHistory.push({ role: 'model', content: data.reply });
+        } else {
+          const errorMsg = data.detail || 'Sorry, an error occurred while fetching the response.';
+          appendMessage('bot', '⚠️ Error: ' + errorMsg);
+        }
+      } catch (err) {
+        removeTypingIndicator(typingIndicator);
+        appendMessage('bot', '⚠️ Could not connect to the server. Make sure the FastAPI backend is running.');
+        console.error('Fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function findNearestStore() {
+      if (!navigator.geolocation) {
+        appendMessage('bot', 'Sorry, your browser does not support location detection.');
+        return;
+      }
+
+      appendMessage('bot', 'Sure, let me find the nearest showroom for you. Please allow location access if your browser asks.');
+
+      navigator.geolocation.getCurrentPosition(
+        async function(position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          await fetchNearestStore(lat, lon);
+        },
+        function(error) {
+          appendMessage('bot', 'I was not able to access your location. You can enable location permissions and try again, or check our store locator on the website.');
+        }
+      );
+    }
+
+    async function fetchNearestStore(latitude, longitude) {
+      setLoading(true);
+      const typingIndicator = showTypingIndicator();
+
+      try {
+        const response = await fetch('/nearest-store', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ latitude: latitude, longitude: longitude })
+        });
+
+        const data = await response.json();
+        removeTypingIndicator(typingIndicator);
+
+        if (response.ok) {
+          appendMessage('bot', `Your nearest showroom carrying Ajmal Electronics products appears to be in ${data.name}, at ${data.address}. It's approximately ${data.distance_km} km away.`);
+        } else {
+          appendMessage('bot', 'Sorry, I could not find a nearby showroom right now.');
+        }
+      } catch (err) {
+        removeTypingIndicator(typingIndicator);
+        appendMessage('bot', '⚠️ Could not connect to the server to check nearby stores.');
+        console.error('Fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function appendMessage(sender, text) {
+      const messageRow = document.createElement('div');
+      messageRow.classList.add('message-row', sender);
+
+      const avatar = document.createElement('div');
+      avatar.classList.add('avatar');
+      avatar.textContent = sender === 'bot' ? 'AE' : 'You';
+
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble');
+      bubble.textContent = text;
+
+      messageRow.appendChild(avatar);
+      messageRow.appendChild(bubble);
+
+      chatMessages.appendChild(messageRow);
+      scrollToBottom();
+    }
+
+    function showTypingIndicator() {
+      const row = document.createElement('div');
+      row.classList.add('message-row', 'bot');
+      row.id = 'typing-row';
+
+      const avatar = document.createElement('div');
+      avatar.classList.add('avatar');
+      avatar.textContent = 'AE';
+
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble', 'typing-indicator');
+      bubble.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      `;
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      chatMessages.appendChild(row);
+      scrollToBottom();
+      return row;
+    }
+
+    function removeTypingIndicator(indicatorElement) {
+      if (indicatorElement && indicatorElement.parentNode) {
+        indicatorElement.parentNode.removeChild(indicatorElement);
+      }
+    }
+
+    function scrollToBottom() {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function setLoading(isLoading) {
+      userInput.disabled = isLoading;
+      sendBtn.disabled = isLoading;
+      if (!isLoading) {
+        userInput.focus();
+      }
+    }
+  </script>
+
+</body>
+</html>
